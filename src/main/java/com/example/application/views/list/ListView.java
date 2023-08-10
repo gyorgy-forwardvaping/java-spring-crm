@@ -11,7 +11,6 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import java.util.Collections;
 
 @PageTitle("Contacts | Vaddin CRM")
 @Route(value = "")
@@ -28,9 +27,11 @@ public class ListView extends VerticalLayout {
         setSizeFull();
         configureGrid();
         configureForm();
+        
         add(getToolbar(),getContent());
         
         updateList();
+        closeEditor();
     }
 
     private void configureGrid() {
@@ -40,6 +41,18 @@ public class ListView extends VerticalLayout {
         grid.addColumn(contact -> contact.getStatus().getName()).setHeader("Status");
         grid.addColumn(contact -> contact.getCompany().getName()).setHeader("Company");
         grid.getColumns().forEach(col -> col.setAutoWidth(true));
+        
+        grid.asSingleSelect().addValueChangeListener(e -> editContact(e.getValue()));
+    }
+    
+    private void editContact(Contact contact) {
+        if (contact == null) {
+            closeEditor();
+        } else {
+            form.setContact(contact);
+            form.setVisible(true);
+            addClassName("editing");
+        }
     }
     
     private Component getContent() {
@@ -74,6 +87,12 @@ public class ListView extends VerticalLayout {
 
     private void updateList() {
         grid.setItems(service.findAllContacts(filterText.getValue()));
+    }
+
+    private void closeEditor() {
+        form.setContact(null);
+        form.setVisible(false);
+        removeClassName("editing");
     }
 
 }
