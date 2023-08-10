@@ -19,7 +19,7 @@ public class ListView extends VerticalLayout {
     TextField filterText = new TextField();
     ContactForm form;
     
-    private CrmService service;
+    private final CrmService service;
     
     public ListView(CrmService service) {
         this.service = service;
@@ -69,6 +69,21 @@ public class ListView extends VerticalLayout {
         form = new ContactForm(service.findAllCompanies(),service.findAllStatuses());
         form.setWidth("25em");
         
+        form.addSaveListener(this::saveContact); 
+        form.addDeleteListener(this::deleteContact); 
+        form.addCloseListener(e -> closeEditor()); 
+    }
+    
+    private void saveContact(ContactForm.SaveEvent event) {
+        service.saveContact(event.getContact());
+        updateList();
+        closeEditor();
+    }
+
+    private void deleteContact(ContactForm.DeleteEvent event) {
+        service.deleteContact(event.getContact());
+        updateList();
+        closeEditor();
     }
     
     private Component getToolbar() {
@@ -77,7 +92,8 @@ public class ListView extends VerticalLayout {
         filterText.setValueChangeMode(ValueChangeMode.LAZY);
         filterText.addValueChangeListener(e -> updateList());
         
-        Button addContactButton = new Button("addContact");
+        Button addContactButton = new Button("Add Contact");
+        addContactButton.addClickListener(e -> addContact());
         
         HorizontalLayout toolbar = new HorizontalLayout(filterText,addContactButton);
         toolbar.addClassName("toolbar");
@@ -85,6 +101,11 @@ public class ListView extends VerticalLayout {
         return toolbar;
     }
 
+    private void addContact(){
+        grid.asSingleSelect().clear();
+        editContact(new Contact());
+    }
+    
     private void updateList() {
         grid.setItems(service.findAllContacts(filterText.getValue()));
     }
