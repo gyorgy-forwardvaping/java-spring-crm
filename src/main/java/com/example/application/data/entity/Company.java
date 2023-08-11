@@ -6,6 +6,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.NotBlank;
 import java.util.LinkedList;
 import java.util.List;
+import org.hibernate.annotations.Formula;
 
 @Entity
 public class Company extends AbstractEntity {
@@ -30,5 +31,12 @@ public class Company extends AbstractEntity {
 
     public void setEmployees(List<Contact> employees) {
         this.employees = employees;
+    }
+    
+    @Formula("(select count(c.id) from Contact c where c.company_id = id)") 
+    private int employeeCount;
+
+    public int getEmployeeCount(){
+        return employeeCount;
     }
 }
